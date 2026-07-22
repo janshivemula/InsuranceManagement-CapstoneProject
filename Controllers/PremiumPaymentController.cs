@@ -83,7 +83,7 @@ namespace InsuranceManagementSystem.Controllers
         [HttpGet("customer/{customerId:int}")]
         public async Task<IActionResult> GetPaymentsByCustomer(int customerId, [FromQuery] PaginationRequestDto paginationDto)
         {
-            int userId = int.Parse(User.FindFirst("UserId")!.Value);
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             string role = User.FindFirst(ClaimTypes.Role)!.Value;
 
             var payments = await _paymentService.GetPaymentsByCustomerIdAsync(customerId, userId, role, paginationDto);

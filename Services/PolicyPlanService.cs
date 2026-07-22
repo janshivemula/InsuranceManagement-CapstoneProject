@@ -161,8 +161,7 @@ public class PolicyPlanService : IPolicyPlanService
         if (plan == null)
             throw new NotFoundException($"Policy Plan with Id {id} not found.");
 
-        if (!plan.IsActive)
-            throw new BadRequestException("Inactive plan cannot be updated.");
+        
 
         var product = await _productRepository.GetByIdAsync(requestDto.InsuranceProductId);
 

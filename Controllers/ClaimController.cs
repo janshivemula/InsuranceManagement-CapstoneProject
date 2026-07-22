@@ -37,7 +37,7 @@ namespace InsuranceManagementSystem.Controllers
             });
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,InternalStaff")]
         [HttpGet("paged")]
         public async Task<IActionResult> GetPagedClaims([FromQuery] ClaimPaginationRequestDto request)
         {

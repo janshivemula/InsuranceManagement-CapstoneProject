@@ -86,6 +86,17 @@ namespace InsuranceManagementSystem
             // Authorization
             builder.Services.AddAuthorization();
 
+            //cors
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AngularPolicy", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             // Swagger
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
@@ -132,9 +143,9 @@ namespace InsuranceManagementSystem
                 await DbSeeder.SeedAdminAsync(dbContext);
             }
 
-            app.UseMiddleware<ExceptionMiddleware>();
+            
 
-            // Middleware
+ // Middleware
             app.UseMiddleware<ExceptionMiddleware>();
 
             // Swagger
@@ -145,6 +156,8 @@ namespace InsuranceManagementSystem
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("AngularPolicy");
 
             // Authentication & Authorization
             app.UseAuthentication();

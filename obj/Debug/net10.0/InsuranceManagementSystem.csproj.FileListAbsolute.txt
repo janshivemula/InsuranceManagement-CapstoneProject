@@ -152,3 +152,4 @@ C:\Users\rajak\source\repos\InsuranceManagementSystem\InsuranceManagementSystem\
 C:\Users\rajak\source\repos\InsuranceManagementSystem\InsuranceManagementSystem\obj\Debug\net10.0\InsuranceManagementSystem.genruntimeconfig.cache
 C:\Users\rajak\source\repos\InsuranceManagementSystem\InsuranceManagementSystem\obj\Debug\net10.0\ref\InsuranceManagementSystem.dll
 C:\Users\rajak\source\repos\InsuranceManagementSystem\InsuranceManagementSystem\bin\Debug\net10.0\BCrypt-Net-Next.dll
+C:\Users\rajak\source\repos\InsuranceManagementSystem\InsuranceManagementSystem\obj\Debug\net10.0\InsuranceManagementSystem.sourcelink.json
