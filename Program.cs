@@ -3,6 +3,7 @@ using InsuranceManagementSystem.Middleware;
 using InsuranceManagementSystem.Profiles;
 using InsuranceManagementSystem.Repositories.Implementations;
 using InsuranceManagementSystem.Repositories.Interfaces;
+using InsuranceManagementSystem.Services;
 using InsuranceManagementSystem.Services.Implementations;
 using InsuranceManagementSystem.Services.Interfaces;
 using InsureFlowAPI.Services.Implementations;
@@ -47,7 +48,7 @@ namespace InsuranceManagementSystem
             builder.Services.AddScoped<IPolicyService, PolicyService>();
             builder.Services.AddScoped<IClaimService, ClaimService>();
             builder.Services.AddScoped<IPremiumPaymentService, PremiumPaymentService>();
-
+            builder.Services.AddScoped<IFileStorageService, FileStorageService>();
             // AutoMapper
             builder.Services.AddAutoMapper(opt =>
             {
@@ -145,7 +146,7 @@ namespace InsuranceManagementSystem
 
             
 
- // Middleware
+            // Middleware
             app.UseMiddleware<ExceptionMiddleware>();
 
             // Swagger
@@ -156,6 +157,8 @@ namespace InsuranceManagementSystem
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseCors("AngularPolicy");
 

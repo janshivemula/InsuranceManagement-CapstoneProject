@@ -50,9 +50,29 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "requestDto",
-        "Type": "InsuranceManagementSystem.DTOs.Claim.ClaimRequestDto",
-        "IsRequired": true
+        "Name": "PolicyId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "ClaimAmount",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "ClaimReason",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "IncidentDate",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "Documents",
+        "Type": "System.Collections.Generic.List\u00601[[InsuranceManagementSystem.DTOs.Claim.ClaimDocumentRequestDto, InsuranceManagementSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -156,9 +176,24 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "requestDto",
-        "Type": "InsuranceManagementSystem.DTOs.Claim.ClaimDocumentRequestDto",
-        "IsRequired": true
+        "Name": "ClaimId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "DocumentName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "DocumentType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Document",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

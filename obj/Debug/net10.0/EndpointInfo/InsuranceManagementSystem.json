@@ -85,19 +85,61 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ClaimRequestDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ClaimRequestDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/ClaimRequestDto"
+                "required": [
+                  "ClaimReason",
+                  "Documents",
+                  "IncidentDate"
+                ],
+                "type": "object",
+                "properties": {
+                  "PolicyId": {
+                    "maximum": 2147483647,
+                    "minimum": 1,
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "ClaimAmount": {
+                    "maximum": 999999999999,
+                    "minimum": 1,
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "ClaimReason": {
+                    "maxLength": 500,
+                    "minLength": 5,
+                    "type": "string"
+                  },
+                  "IncidentDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Documents": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ClaimDocumentRequestDto"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "PolicyId": {
+                  "style": "form"
+                },
+                "ClaimAmount": {
+                  "style": "form"
+                },
+                "ClaimReason": {
+                  "style": "form"
+                },
+                "IncidentDate": {
+                  "style": "form"
+                },
+                "Documents": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -289,19 +331,49 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ClaimDocumentRequestDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ClaimDocumentRequestDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/ClaimDocumentRequestDto"
+                "required": [
+                  "ClaimId",
+                  "Document",
+                  "DocumentName",
+                  "DocumentType"
+                ],
+                "type": "object",
+                "properties": {
+                  "ClaimId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "DocumentName": {
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  "DocumentType": {
+                    "maxLength": 50,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  "Document": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "ClaimId": {
+                  "style": "form"
+                },
+                "DocumentName": {
+                  "style": "form"
+                },
+                "DocumentType": {
+                  "style": "form"
+                },
+                "Document": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -1958,8 +2030,8 @@
       "ClaimDocumentRequestDto": {
         "required": [
           "claimId",
+          "document",
           "documentName",
-          "documentReference",
           "documentType"
         ],
         "type": "object",
@@ -1978,49 +2050,9 @@
             "minLength": 2,
             "type": "string"
           },
-          "documentReference": {
-            "maxLength": 300,
-            "minLength": 3,
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClaimRequestDto": {
-        "required": [
-          "claimReason",
-          "documents",
-          "incidentDate"
-        ],
-        "type": "object",
-        "properties": {
-          "policyId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "claimAmount": {
-            "maximum": 999999999999,
-            "minimum": 1,
-            "type": "number",
-            "format": "double"
-          },
-          "claimReason": {
-            "maxLength": 500,
-            "minLength": 5,
-            "type": "string"
-          },
-          "incidentDate": {
+          "document": {
             "type": "string",
-            "format": "date-time"
-          },
-          "documents": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClaimDocumentRequestDto"
-            }
+            "format": "binary"
           }
         },
         "additionalProperties": false

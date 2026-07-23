@@ -81,8 +81,19 @@ public class PremiumPaymentService : IPremiumPaymentService
         var policies = await _policyRepository.GetPoliciesByCustomerIdAsync(customerId);
 
         if (!policies.Any())
-            throw new NotFoundException("Customer has no policies.");
-
+        {
+            return new PagedResponse<PremiumPaymentResponseDto>
+            {
+                Records = Enumerable.Empty<PremiumPaymentResponseDto>(),
+                CurrentPage = paginationDto.PageNumber,
+                PageSize = paginationDto.PageSize,
+                TotalRecords = 0,
+                TotalPages = 0,
+                IsLastPage = true,
+                SortField = paginationDto.SortBy,
+                SortDirection = paginationDto.SortDirection
+            };
+        }
         // Customers can view only their own payments
         if (role == "Customer")
         {

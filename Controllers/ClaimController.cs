@@ -71,7 +71,7 @@ namespace InsuranceManagementSystem.Controllers
 
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        public async Task<IActionResult> CreateClaim([FromBody] ClaimRequestDto requestDto)
+        public async Task<IActionResult> CreateClaim([FromForm] ClaimRequestDto requestDto)
         {
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -175,7 +175,7 @@ namespace InsuranceManagementSystem.Controllers
         // Claim Documents
 
         [HttpPost("document")]
-        public async Task<IActionResult> AddDocument([FromBody] ClaimDocumentRequestDto requestDto)
+        public async Task<IActionResult> AddDocument([FromForm] ClaimDocumentRequestDto requestDto)
         {
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var role = Enum.Parse<UserRole>(User.FindFirstValue(ClaimTypes.Role)!);

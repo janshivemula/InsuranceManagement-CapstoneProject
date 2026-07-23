@@ -23,6 +23,7 @@ namespace InsuranceManagementSystem.Services.Implementations
         private readonly IMapper _mapper;
         private readonly AppDbContext _context;
         private readonly ILogger<ClaimService> _logger;
+        private readonly IFileStorageService _fileStorageService;
 
         public ClaimService(
             IClaimRepository claimRepository,
@@ -33,7 +34,8 @@ namespace InsuranceManagementSystem.Services.Implementations
             ICustomerRepository customerRepository,
             IMapper mapper,
             AppDbContext context,
-            ILogger<ClaimService> logger)
+            ILogger<ClaimService> logger,
+            IFileStorageService fileStorageService)
         {
             _claimRepository = claimRepository;
             _claimDocumentRepository = claimDocumentRepository;
@@ -44,6 +46,7 @@ namespace InsuranceManagementSystem.Services.Implementations
             _mapper = mapper;
             _context = context;
             _logger = logger;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<IEnumerable<ClaimResponseDto>> GetAllClaimsAsync()
@@ -105,7 +108,7 @@ namespace InsuranceManagementSystem.Services.Implementations
             };
         }
 
-        
+
         public async Task<ClaimResponseDto?> GetClaimByIdAsync(int claimId, int userId, UserRole role)
         {
             var claim = await _claimRepository.GetByIdAsync(claimId);
@@ -215,12 +218,14 @@ namespace InsuranceManagementSystem.Services.Implementations
 
                 foreach (var document in requestDto.Documents)
                 {
+                    var filePath = await _fileStorageService.SaveClaimDocumentAsync(document.Document);
+
                     var claimDocument = new ClaimDocument
                     {
                         ClaimId = claim.ClaimId,
                         DocumentName = document.DocumentName.Trim(),
                         DocumentType = document.DocumentType.Trim(),
-                        DocumentReference = document.DocumentReference.Trim(),
+                        DocumentReference = filePath,
                         UploadedDate = DateTime.UtcNow
                     };
 
@@ -291,12 +296,14 @@ namespace InsuranceManagementSystem.Services.Implementations
             if (claim.ClaimStatus == ClaimStatus.Approved || claim.ClaimStatus == ClaimStatus.Rejected)
                 throw new BadRequestException("Cannot add documents after the claim has been closed.");
 
+            var filePath = await _fileStorageService.SaveClaimDocumentAsync(requestDto.Document);
+
             var document = new ClaimDocument
             {
                 ClaimId = requestDto.ClaimId,
                 DocumentName = requestDto.DocumentName.Trim(),
                 DocumentType = requestDto.DocumentType.Trim(),
-                DocumentReference = requestDto.DocumentReference.Trim(),
+                DocumentReference = filePath,
                 UploadedDate = DateTime.UtcNow
             };
 
@@ -312,7 +319,7 @@ namespace InsuranceManagementSystem.Services.Implementations
             return _mapper.Map<ClaimDocumentResponseDto>(document);
         }
 
-       
+
         public async Task<IEnumerable<ClaimDocumentResponseDto>> GetClaimDocumentsAsync(int claimId, int userId, UserRole role)
         {
             if (role == UserRole.Customer)
@@ -330,7 +337,7 @@ namespace InsuranceManagementSystem.Services.Implementations
             return _mapper.Map<IEnumerable<ClaimDocumentResponseDto>>(documents);
         }
 
-        
+
         public async Task<IEnumerable<ClaimStatusHistoryResponseDto>> GetClaimStatusHistoryAsync(int claimId, int userId, UserRole role)
         {
             if (role == UserRole.Customer)
@@ -458,7 +465,7 @@ namespace InsuranceManagementSystem.Services.Implementations
                 requestDto.FinalDecisionStatus);
         }
 
-        
+
         private async Task ValidateClaimOwnershipAsync(int claimId, int userId)
         {
             var customer = await _customerRepository.GetByUserIdAsync(userId);

@@ -119,8 +119,8 @@ namespace InsuranceManagementSystem.Profiles
             // =========================
 
             CreateMap<ClaimDocumentRequestDto, ClaimDocument>()
-                .ForMember(dest => dest.DocumentReference,
-                    opt => opt.MapFrom(src => src.DocumentReference));
+    .ForMember(dest => dest.DocumentReference,
+        opt => opt.Ignore());
 
             CreateMap<ClaimDocument, ClaimDocumentResponseDto>()
                 .ForMember(dest => dest.FilePath,

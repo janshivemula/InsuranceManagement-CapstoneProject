@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
-namespace InsuranceManagementSystem.DTOs.Claim
+namespace InsuranceManagementSystem.DTOs
 {
     public class SupportingDocumentDto
     {
@@ -13,7 +14,6 @@ namespace InsuranceManagementSystem.DTOs.Claim
         public string DocumentType { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(255)]
-        public string DocumentReference { get; set; } = string.Empty;
+        public IFormFile Document { get; set; } = null!;
     }
 }
