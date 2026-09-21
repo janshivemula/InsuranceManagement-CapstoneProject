@@ -9,6 +9,11 @@ namespace InsuranceManagementSystem.DTOs.Claim
 
         public int PolicyId { get; set; }
         public string PolicyNumber { get; set; } = string.Empty;
+
+        public string ProductName { get; set; } = string.Empty;
+
+        public string PlanName { get; set; } = string.Empty;
+
         public string CustomerName { get; set; } = string.Empty;
 
         public decimal ClaimAmount { get; set; }

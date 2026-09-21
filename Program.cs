@@ -49,6 +49,7 @@ namespace InsuranceManagementSystem
             builder.Services.AddScoped<IClaimService, ClaimService>();
             builder.Services.AddScoped<IPremiumPaymentService, PremiumPaymentService>();
             builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+            builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
             // AutoMapper
             builder.Services.AddAutoMapper(opt =>
             {

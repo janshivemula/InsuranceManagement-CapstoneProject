@@ -16,17 +16,20 @@ namespace InsureFlowAPI.Services.Implementations
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<CustomerService> _logger;
+        private readonly ICloudinaryService _cloudinaryService;
 
         public CustomerService(
             ICustomerRepository customerRepository,
             IUserRepository userRepository,
             IMapper mapper,
-            ILogger<CustomerService> logger)
+            ILogger<CustomerService> logger,
+            ICloudinaryService cloudinaryService)
         {
             _customerRepository = customerRepository;
             _userRepository = userRepository;
             _mapper = mapper;
             _logger = logger;
+            _cloudinaryService = cloudinaryService;
         }
 
         // Get all customers
@@ -127,7 +130,7 @@ namespace InsureFlowAPI.Services.Implementations
         }
 
         // Create customer profile after auth registration
-        public async Task<CustomerResponseDto> CreateCustomerAsync(int userId, CustomerRequestDto requestDto)
+        public async Task<CustomerResponseDto> CreateCustomerAsync(int userId,CustomerRequestDto requestDto,IFormFile? profileImage)
         {
             var user = await _userRepository.GetByIdAsync(userId);
 
@@ -140,92 +143,182 @@ namespace InsureFlowAPI.Services.Implementations
             if (!user.IsActive)
                 throw new BadRequestException("Inactive user cannot create customer profile.");
 
+
             var existingCustomer = await _customerRepository.GetByUserIdAsync(userId);
+
             if (existingCustomer != null)
                 throw new ConflictException("Customer profile already exists.");
 
+
             var dob = DateOnly.FromDateTime(requestDto.DateOfBirth);
+
 
             if (dob > DateOnly.FromDateTime(DateTime.UtcNow))
                 throw new BadRequestException("Date of birth cannot be in the future.");
 
+
             var age = DateTime.Today.Year - requestDto.DateOfBirth.Year;
+
             if (requestDto.DateOfBirth.Date > DateTime.Today.AddYears(-age))
                 age--;
+
 
             if (age < 18)
                 throw new BadRequestException("Customer must be at least 18 years old.");
 
+
             var customer = new Customer
             {
                 UserId = userId,
+
                 DateOfBirth = dob,
+
                 Address = requestDto.Address.Trim(),
+
                 City = requestDto.City.Trim(),
+
                 State = requestDto.State.Trim(),
+
                 PinCode = requestDto.PinCode.Trim(),
+
                 NomineeName = requestDto.NomineeName.Trim(),
+
                 NomineeRelation = requestDto.NomineeRelation.Trim(),
+
+
+                // Cloudinary URL stored here
+                ProfileImageUrl = null,
+
+
                 IsActive = true,
+
                 CreatedDate = DateTime.UtcNow,
+
                 UpdatedDate = DateTime.UtcNow
             };
 
+            if (profileImage != null)
+            {
+                customer.ProfileImageUrl =
+                    await _cloudinaryService.UploadImageAsync(profileImage);
+            }
+
+
             await _customerRepository.AddAsync(customer);
+
             await _customerRepository.SaveChangesAsync();
 
+
+
             var createdCustomer = await _customerRepository.GetByUserIdAsync(userId);
+
+
             if (createdCustomer == null)
                 throw new BadRequestException("Customer profile could not be created.");
 
-            _logger.LogInformation("Customer profile created successfully for UserId {UserId}", userId);
+
+            _logger.LogInformation(
+                "Customer profile created successfully for UserId {UserId}",
+                userId);
+
 
             return _mapper.Map<CustomerResponseDto>(createdCustomer);
         }
 
         // Update own customer profile
-        public async Task<CustomerResponseDto> UpdateCustomerAsync(int id, int loggedInUserId, CustomerRequestDto requestDto)
+        public async Task<CustomerResponseDto> UpdateCustomerAsync(
+          int id,int loggedInUserId,CustomerRequestDto requestDto, IFormFile? profileImage)
         {
             var customer = await _customerRepository.GetByIdAsync(id);
+
 
             if (customer == null)
                 throw new NotFoundException($"Customer with Id {id} not found.");
 
+
             if (customer.UserId != loggedInUserId)
                 throw new UnauthorizedAccessException("You can update only your own profile.");
+
 
             if (!customer.User.IsActive)
                 throw new BadRequestException("Inactive customer cannot be updated.");
 
+
+
             var dob = DateOnly.FromDateTime(requestDto.DateOfBirth);
+
 
             if (dob > DateOnly.FromDateTime(DateTime.UtcNow))
                 throw new BadRequestException("Date of birth cannot be in the future.");
 
+
+
             var age = DateTime.Today.Year - requestDto.DateOfBirth.Year;
+
+
             if (requestDto.DateOfBirth.Date > DateTime.Today.AddYears(-age))
                 age--;
+
 
             if (age < 18)
                 throw new BadRequestException("Customer must be at least 18 years old.");
 
+
+
             customer.DateOfBirth = dob;
+
             customer.Address = requestDto.Address.Trim();
+
             customer.City = requestDto.City.Trim();
+
             customer.State = requestDto.State.Trim();
+
             customer.PinCode = requestDto.PinCode.Trim();
+
             customer.NomineeName = requestDto.NomineeName.Trim();
+
             customer.NomineeRelation = requestDto.NomineeRelation.Trim();
+
+            if (profileImage != null)
+            {
+                // Upload new image first
+                var newImageUrl = await _cloudinaryService.UploadImageAsync(profileImage);
+
+                // Delete old image only after successful upload
+                if (!string.IsNullOrWhiteSpace(customer.ProfileImageUrl))
+                {
+                    await _cloudinaryService.DeleteImageAsync(customer.ProfileImageUrl);
+                }
+
+                customer.ProfileImageUrl = newImageUrl;
+            }
+
+
             customer.UpdatedDate = DateTime.UtcNow;
 
+
+
             await _customerRepository.UpdateAsync(customer);
+
             await _customerRepository.SaveChangesAsync();
 
-            var updatedCustomer = await _customerRepository.GetByIdAsync(id);
+
+
+            var updatedCustomer =
+                await _customerRepository.GetByIdAsync(id);
+
+
+
             if (updatedCustomer == null)
                 throw new BadRequestException("Customer profile could not be updated.");
 
-            _logger.LogInformation("Customer profile updated successfully. CustomerId: {CustomerId}", id);
+
+
+            _logger.LogInformation(
+                "Customer profile updated successfully. CustomerId: {CustomerId}",
+                id);
+
+
 
             return _mapper.Map<CustomerResponseDto>(updatedCustomer);
         }

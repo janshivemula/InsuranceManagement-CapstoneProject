@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace InsuranceManagementSystem.DTOs.Claim
 {
@@ -19,8 +20,17 @@ namespace InsuranceManagementSystem.DTOs.Claim
         [Required(ErrorMessage = "Incident date is required.")]
         public DateTime IncidentDate { get; set; }
 
-        [Required(ErrorMessage = "At least one claim document is required.")]
-        [MinLength(1, ErrorMessage = "At least one claim document is required.")]
-        public List<ClaimDocumentRequestDto> Documents { get; set; } = new();
+        [Required(ErrorMessage = "Document name is required.")]
+        [StringLength(100, MinimumLength = 2,
+            ErrorMessage = "Document name must be between 2 and 100 characters.")]
+        public string DocumentName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Document type is required.")]
+        [StringLength(50, MinimumLength = 2,
+            ErrorMessage = "Document type must be between 2 and 50 characters.")]
+        public string DocumentType { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Supporting document is required.")]
+        public IFormFile Document { get; set; } = null!;
     }
 }

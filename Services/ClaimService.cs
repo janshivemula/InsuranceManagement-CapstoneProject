@@ -197,8 +197,8 @@ namespace InsuranceManagementSystem.Services.Implementations
                 if (string.IsNullOrWhiteSpace(requestDto.ClaimReason))
                     throw new BadRequestException("Claim reason is required.");
 
-                if (requestDto.Documents == null || !requestDto.Documents.Any())
-                    throw new BadRequestException("At least one supporting document is required.");
+                if (requestDto.Document == null || requestDto.Document.Length == 0)
+                    throw new BadRequestException("A supporting document is required.");
 
                 var claim = new Claim
                 {
@@ -216,21 +216,18 @@ namespace InsuranceManagementSystem.Services.Implementations
                 await _claimRepository.AddAsync(claim);
                 await _claimRepository.SaveChangesAsync();
 
-                foreach (var document in requestDto.Documents)
+                var filePath = await _fileStorageService.SaveClaimDocumentAsync(requestDto.Document);
+
+                var claimDocument = new ClaimDocument
                 {
-                    var filePath = await _fileStorageService.SaveClaimDocumentAsync(document.Document);
+                    ClaimId = claim.ClaimId,
+                    DocumentName = requestDto.DocumentName.Trim(),
+                    DocumentType = requestDto.DocumentType.Trim(),
+                    DocumentReference = filePath,
+                    UploadedDate = DateTime.UtcNow
+                };
 
-                    var claimDocument = new ClaimDocument
-                    {
-                        ClaimId = claim.ClaimId,
-                        DocumentName = document.DocumentName.Trim(),
-                        DocumentType = document.DocumentType.Trim(),
-                        DocumentReference = filePath,
-                        UploadedDate = DateTime.UtcNow
-                    };
-
-                    await _claimDocumentRepository.AddAsync(claimDocument);
-                }
+                await _claimDocumentRepository.AddAsync(claimDocument);
 
                 var history = new ClaimStatusHistory
                 {

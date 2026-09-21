@@ -26,6 +26,7 @@ namespace InsuranceManagementSystem.Repositories.Implementations
                 .Include(p => p.InsuranceProduct)
                 .Include(p => p.Plan)
                     .ThenInclude(pp => pp.InsuranceProduct)
+                .Include(p => p.Payments)
                 .AsQueryable();
 
             // Filtering
@@ -86,10 +87,12 @@ namespace InsuranceManagementSystem.Repositories.Implementations
                 .Include(p => p.InsuranceProduct)
                 .Include(p => p.Plan)
                     .ThenInclude(pp => pp.InsuranceProduct)
+                .Include(p => p.Payments)
                 .OrderByDescending(p => p.StartDate)
                 .ToListAsync();
         }
 
+        // Retrieves all policies for a specific user.
         public async Task<IEnumerable<Policy>> GetPoliciesByUserIdAsync(int userId)
         {
             return await _context.Policies
@@ -99,6 +102,7 @@ namespace InsuranceManagementSystem.Repositories.Implementations
                 .Include(p => p.InsuranceProduct)
                 .Include(p => p.Plan)
                     .ThenInclude(pp => pp.InsuranceProduct)
+                .Include(p => p.Payments)
                 .OrderByDescending(p => p.StartDate)
                 .ToListAsync();
         }
@@ -113,6 +117,7 @@ namespace InsuranceManagementSystem.Repositories.Implementations
                 .Include(p => p.InsuranceProduct)
                 .Include(p => p.Plan)
                     .ThenInclude(pp => pp.InsuranceProduct)
+                .Include(p => p.Payments)
                 .OrderByDescending(p => p.StartDate)
                 .ToListAsync();
         }
@@ -126,6 +131,7 @@ namespace InsuranceManagementSystem.Repositories.Implementations
                 .Include(p => p.InsuranceProduct)
                 .Include(p => p.Plan)
                     .ThenInclude(pp => pp.InsuranceProduct)
+                .Include(p => p.Payments)
                 .FirstOrDefaultAsync(p => p.PolicyId == id);
         }
 
@@ -138,6 +144,7 @@ namespace InsuranceManagementSystem.Repositories.Implementations
                 .Include(p => p.InsuranceProduct)
                 .Include(p => p.Plan)
                     .ThenInclude(pp => pp.InsuranceProduct)
+                .Include(p => p.Payments)
                 .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber);
         }
 

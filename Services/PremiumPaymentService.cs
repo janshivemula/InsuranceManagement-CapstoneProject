@@ -29,10 +29,13 @@ public class PremiumPaymentService : IPremiumPaymentService
     // Get all payments
     public async Task<PagedResponse<PremiumPaymentResponseDto>> GetAllPaymentsAsync(PaginationRequestDto paginationDto)
     {
-        _logger.LogInformation("Retrieving premium payments. Page: {Page}, Size: {Size}",
-            paginationDto.PageNumber, paginationDto.PageSize);
+        _logger.LogInformation(
+            "Retrieving premium payments. Page: {Page}, Size: {Size}",
+            paginationDto.PageNumber,
+            paginationDto.PageSize);
 
-        var pagedPayments = await _premiumPaymentRepository.GetAllAsync(paginationDto);
+        var pagedPayments =
+            await _premiumPaymentRepository.GetAllAsync(paginationDto);
 
         return new PagedResponse<PremiumPaymentResponseDto>
         {
@@ -48,15 +51,19 @@ public class PremiumPaymentService : IPremiumPaymentService
     }
 
     // Get payments by Policy Id
-    public async Task<PagedResponse<PremiumPaymentResponseDto>> GetPaymentsByPolicyIdAsync(int policyId, PaginationRequestDto paginationDto)
+    public async Task<PagedResponse<PremiumPaymentResponseDto>> GetPaymentsByPolicyIdAsync(
+        int policyId,
+        PaginationRequestDto paginationDto)
     {
         var policy = await _policyRepository.GetByIdAsync(policyId);
 
         if (policy == null)
             throw new NotFoundException("Policy not found.");
 
-        var pagedPayments = await _premiumPaymentRepository
-            .GetPaymentsByPolicyIdAsync(policyId, paginationDto);
+        var pagedPayments =
+            await _premiumPaymentRepository.GetPaymentsByPolicyIdAsync(
+                policyId,
+                paginationDto);
 
         return new PagedResponse<PremiumPaymentResponseDto>
         {
@@ -70,7 +77,6 @@ public class PremiumPaymentService : IPremiumPaymentService
             SortDirection = pagedPayments.SortDirection
         };
     }
-
     // Get payments by Customer Id
     public async Task<PagedResponse<PremiumPaymentResponseDto>> GetPaymentsByCustomerIdAsync(
         int customerId,
@@ -78,7 +84,8 @@ public class PremiumPaymentService : IPremiumPaymentService
         string role,
         PaginationRequestDto paginationDto)
     {
-        var policies = await _policyRepository.GetPoliciesByCustomerIdAsync(customerId);
+        var policies = await _policyRepository
+            .GetPoliciesByCustomerIdAsync(customerId);
 
         if (!policies.Any())
         {
@@ -94,21 +101,28 @@ public class PremiumPaymentService : IPremiumPaymentService
                 SortDirection = paginationDto.SortDirection
             };
         }
-        // Customers can view only their own payments
+
+        // Customer can see only own payment history
         if (role == "Customer")
         {
-            if (policies.First().Customer.UserId != userId)
+            var customerPolicy = policies.First();
+
+            if (customerPolicy.Customer.UserId != userId)
             {
-                throw new UnauthorizedAccessException("You can view only your own payment history.");
+                throw new UnauthorizedAccessException(
+                    "You can view only your own payment history.");
             }
         }
 
-        var pagedPayments = await _premiumPaymentRepository
-            .GetPaymentsByCustomerIdAsync(customerId, paginationDto);
+        var pagedPayments =
+            await _premiumPaymentRepository
+                .GetPaymentsByCustomerIdAsync(customerId, paginationDto);
 
         return new PagedResponse<PremiumPaymentResponseDto>
         {
-            Records = _mapper.Map<IEnumerable<PremiumPaymentResponseDto>>(pagedPayments.Records),
+            Records = _mapper.Map<IEnumerable<PremiumPaymentResponseDto>>
+                        (pagedPayments.Records),
+
             CurrentPage = pagedPayments.CurrentPage,
             PageSize = pagedPayments.PageSize,
             TotalRecords = pagedPayments.TotalRecords,
@@ -119,122 +133,268 @@ public class PremiumPaymentService : IPremiumPaymentService
         };
     }
 
+
     // Get payment by Id
     public async Task<PremiumPaymentResponseDto?> GetPaymentByIdAsync(int id)
     {
-        _logger.LogInformation("Retrieving payment with ID {PaymentId}", id);
+        _logger.LogInformation(
+            "Retrieving payment with ID {PaymentId}",
+            id);
 
-        var payment = await _premiumPaymentRepository.GetByIdAsync(id);
+        var payment =
+            await _premiumPaymentRepository.GetByIdAsync(id);
 
         if (payment == null)
             return null;
 
         return _mapper.Map<PremiumPaymentResponseDto>(payment);
     }
-
     // Make Premium Payment
-    public async Task<PremiumPaymentResponseDto> MakePaymentAsync(PremiumPaymentRequestDto requestDto, int userId, string role)
+    public async Task<PremiumPaymentResponseDto> MakePaymentAsync(
+    PremiumPaymentRequestDto requestDto,
+    int userId,
+    string role)
     {
-        var policy = await _policyRepository.GetByIdAsync(requestDto.PolicyId);
+        var policy = await _policyRepository
+            .GetByIdAsync(requestDto.PolicyId);
 
         if (policy == null)
             throw new NotFoundException("Policy not found.");
 
-        // Customer can pay only for their own policy
+
+        // Customer can pay only own policy
         if (role == "Customer")
         {
             if (policy.Customer.UserId != userId)
             {
-                _logger.LogWarning("Unauthorized payment attempt. UserId: {UserId}, PolicyId: {PolicyId}",
-                    userId, policy.PolicyId);
-
-                throw new UnauthorizedAccessException("You can make payment only for your own policy.");
+                throw new UnauthorizedAccessException(
+                    "You can make payment only for your own policy.");
             }
         }
 
-        // Customer must be active
+
+        // Customer validation
         if (!policy.Customer.IsActive)
-            throw new BadRequestException("Customer account is inactive.");
+            throw new BadRequestException(
+                "Customer account is inactive.");
 
-        // Plan must be active
+
+        // Plan validation
         if (!policy.Plan.IsActive)
-            throw new BadRequestException("Policy plan is inactive.");
+            throw new BadRequestException(
+                "Policy plan is inactive.");
 
-        // Product must be active
+
+        // Product validation
         if (!policy.InsuranceProduct.IsActive)
-            throw new BadRequestException("Insurance product is inactive.");
+            throw new BadRequestException(
+                "Insurance product is inactive.");
 
-        // Policy cannot be cancelled
+
+        // Policy status validation
         if (policy.PolicyStatus == PolicyStatus.Cancelled)
-            throw new BadRequestException("Cancelled policies cannot accept payments.");
+            throw new BadRequestException(
+                "Cancelled policies cannot accept payments.");
 
-        // Policy cannot be expired
+
         if (policy.PolicyStatus == PolicyStatus.Expired)
-            throw new BadRequestException("Expired policies cannot accept payments.");
+            throw new BadRequestException(
+                "Expired policies cannot accept payments.");
 
-        // One-time premium can be paid only once
-        if (policy.Plan.PremiumType == PremiumType.OneTime && policy.PolicyStatus == PolicyStatus.Active)
+
+        
+        // Cannot pay before policy starts
+        if (policy.StartDate > DateOnly.FromDateTime(DateTime.UtcNow))
         {
-            throw new BadRequestException("One-time premium has already been paid for this policy.");
+            throw new BadRequestException(
+                "Premium payment cannot be made before policy start date.");
         }
 
-        // Validate amount
-        if (requestDto.Amount <= 0)
-            throw new BadRequestException("Payment amount must be greater than zero.");
 
-        // Validate required premium amount
-        if (requestDto.Amount < policy.Plan.PremiumAmount)
+
+        // Calculate installment amount
+
+        decimal installmentAmount = policy.Plan.PremiumAmount;
+
+        // Calculate total premium amount
+
+        decimal totalPremiumAmount = policy.Plan.PremiumAmount;
+
+        switch (policy.Plan.PremiumType)
         {
-            throw new BadRequestException($"Minimum premium amount is {policy.Plan.PremiumAmount}.");
+            case PremiumType.Monthly:
+                totalPremiumAmount *= policy.Plan.DurationInYears * 12;
+                break;
+
+            case PremiumType.Quarterly:
+                totalPremiumAmount *= policy.Plan.DurationInYears * 4;
+                break;
+
+            case PremiumType.HalfYearly:
+                totalPremiumAmount *= policy.Plan.DurationInYears * 2;
+                break;
+
+            case PremiumType.Annual:
+                totalPremiumAmount *= policy.Plan.DurationInYears;
+                break;
+
+            case PremiumType.OneTime:
+                break;
         }
 
-        // Validate transaction reference
-        if (string.IsNullOrWhiteSpace(requestDto.TransactionReference))
-            throw new BadRequestException("Transaction reference is required.");
+        // Prevent over payment
 
-        string transactionReference = requestDto.TransactionReference.Trim();
+        var remainingAmount =
+            totalPremiumAmount -
+            policy.TotalPremiumPaid;
 
-        // Check duplicate transaction reference
-        var existingPayment = await _premiumPaymentRepository.GetByTransactionReferenceAsync(transactionReference);
+        if (remainingAmount <= 0)
+        {
+            throw new BadRequestException(
+                "Premium amount is already fully paid.");
+        }
+
+        if (installmentAmount > remainingAmount)
+        {
+            installmentAmount = remainingAmount;
+        }
+
+        // Transaction reference validation
+
+        if (string.IsNullOrWhiteSpace(
+            requestDto.TransactionReference))
+        {
+            throw new BadRequestException(
+                "Transaction reference is required.");
+        }
+
+
+
+        string transactionReference =
+            requestDto.TransactionReference.Trim();
+
+
+
+        var existingPayment =
+            await _premiumPaymentRepository
+            .GetByTransactionReferenceAsync(transactionReference);
+
 
         if (existingPayment != null)
         {
-            _logger.LogWarning("Duplicate transaction reference detected: {TransactionReference}", transactionReference);
-            throw new ConflictException("Transaction reference already exists.");
+            throw new ConflictException(
+                "Transaction reference already exists.");
         }
+
+
+
+
+        // Create payment
 
         var payment = new PremiumPayment
         {
             CustomerId = policy.CustomerId,
+
             PolicyId = policy.PolicyId,
-            Amount = requestDto.Amount,
+
+            Amount = installmentAmount,
+
             PaymentDate = DateTime.UtcNow,
+
             PaymentMode = requestDto.PaymentMode,
+
             TransactionReference = transactionReference,
+
             PaymentStatus = PaymentStatus.Success,
+
             CreatedDate = DateTime.UtcNow
         };
 
-        _logger.LogInformation("Recording premium payment. PolicyId: {PolicyId}, Amount: {Amount}",
-            payment.PolicyId, payment.Amount);
+
 
         await _premiumPaymentRepository.AddAsync(payment);
 
-        // Update policy
-        policy.TotalPremiumPaid += requestDto.Amount;
+
+
+        // Update policy payment details
+
+        policy.TotalPremiumPaid += installmentAmount;
+
+
+        policy.LastPaymentDate =
+            DateTime.UtcNow;
+
+
+
+        // Activate policy
 
         if (policy.PolicyStatus == PolicyStatus.PendingPayment)
         {
-            policy.PolicyStatus = PolicyStatus.Active;
+            policy.PolicyStatus =
+                PolicyStatus.Active;
         }
 
-        policy.UpdatedDate = DateTime.UtcNow;
+
+
+
+        // Next due date calculation
+
+        switch (policy.Plan.PremiumType)
+        {
+            case PremiumType.Monthly:
+
+                policy.NextDueDate =
+                    DateTime.UtcNow.AddMonths(1);
+
+                break;
+
+
+            case PremiumType.Quarterly:
+
+                policy.NextDueDate =
+                    DateTime.UtcNow.AddMonths(3);
+
+                break;
+
+
+            case PremiumType.HalfYearly:
+
+                policy.NextDueDate =
+                    DateTime.UtcNow.AddMonths(6);
+
+                break;
+
+
+            case PremiumType.Annual:
+
+                policy.NextDueDate =
+                    DateTime.UtcNow.AddYears(1);
+
+                break;
+
+
+            case PremiumType.OneTime:
+
+                policy.NextDueDate = null;
+
+                break;
+        }
+
+
+
+        policy.UpdatedDate =
+            DateTime.UtcNow;
+
+
 
         await _policyRepository.UpdateAsync(policy);
+
+
         await _premiumPaymentRepository.SaveChangesAsync();
 
-        _logger.LogInformation("Premium payment recorded successfully. PaymentId: {PaymentId}", payment.PaymentId);
+
 
         return _mapper.Map<PremiumPaymentResponseDto>(payment);
     }
 }
+

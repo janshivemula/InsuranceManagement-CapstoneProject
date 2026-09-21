@@ -48,6 +48,13 @@ namespace InsuranceManagementSystem.Models
         [Range(0, double.MaxValue, ErrorMessage = "Total Premium Paid cannot be negative.")]
         public decimal TotalPremiumPaid { get; set; } = 0;
 
+        public DateTime? LastPaymentDate { get; set; }
+
+        public DateTime? NextDueDate { get; set; }
+        public bool IsPaymentDue { get; set; } = false;
+
+        public int InstallmentsPaid { get; set; } = 0;
+
         [Required]
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 

@@ -6,7 +6,11 @@ namespace InsuranceManagementSystem.Services.Interfaces
     public interface IAuthService
     {
         Task<UserResponseDto> RegisterCustomerAsync(RegisterRequestDto dto);
+
         Task<LoginResponseDto> LoginAsync(LoginRequestDto dto);
 
+        Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto dto);
+
+        Task<bool> ResetPasswordAsync(ResetPasswordRequestDto dto);
     }
 }

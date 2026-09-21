@@ -17,6 +17,7 @@
 
         public string NomineeName { get; set; } = string.Empty;
         public string NomineeRelation { get; set; } = string.Empty;
+        public string? ProfileImageUrl { get; set; }
 
         public bool IsActive { get; set; }
 

@@ -33,8 +33,13 @@ namespace InsuranceManagementSystem.Models
 
             public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
 
-            //navi one-one
-            public Customer? Customer { get; set; }
+            public string? PasswordResetToken { get; set; }
+
+            public DateTime? PasswordResetTokenExpiry { get; set; }
+
+
+        //navi one-one
+        public Customer? Customer { get; set; }
 
             //One user Can have many claim histories
             public ICollection<ClaimStatusHistory>? ClaimHistories { get; set; } = new List<ClaimStatusHistory>();

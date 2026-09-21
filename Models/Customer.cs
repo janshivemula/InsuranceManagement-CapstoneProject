@@ -45,6 +45,7 @@ namespace InsuranceManagementSystem.Models
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
+        public string? ProfileImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
 
         // Navigation Property

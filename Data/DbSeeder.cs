@@ -20,7 +20,7 @@ namespace InsuranceManagementSystem.Data
                 FullName = "System Admin",
                 Email = "admin@insurance.com",
                 Password = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
-                //Password = "Admin@123" : no safety 
+                //Password = "Admin@1234" : no safety 
                 MobileNumber = "9999999999",
                 Role = UserRole.Admin,
                 IsActive = true,

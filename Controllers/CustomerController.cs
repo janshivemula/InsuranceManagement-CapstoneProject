@@ -136,11 +136,11 @@ namespace InsuranceManagementSystem.Controllers
         // Create Customer Profile
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        public async Task<IActionResult> CreateCustomer([FromBody] CustomerRequestDto requestDto)
+        public async Task<IActionResult> CreateCustomer([FromForm] CustomerRequestDto requestDto)
         {
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var customer = await _customerService.CreateCustomerAsync(userId, requestDto);
+            var customer = await _customerService.CreateCustomerAsync(userId,requestDto,requestDto.ProfileImage);
 
             return CreatedAtAction(nameof(GetCustomerById),
                 new { id = customer.CustomerId },
@@ -156,11 +156,11 @@ namespace InsuranceManagementSystem.Controllers
         // Update Customer Profile
         [Authorize(Roles = "Customer")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerRequestDto requestDto)
+        public async Task<IActionResult> UpdateCustomer(int id,[FromForm] CustomerRequestDto requestDto)
         {
             int loggedInUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var customer = await _customerService.UpdateCustomerAsync(id, loggedInUserId, requestDto);
+            var customer = await _customerService.UpdateCustomerAsync(id,loggedInUserId,requestDto, requestDto.ProfileImage);
 
             return Ok(new ApiResponse<CustomerResponseDto>
             {

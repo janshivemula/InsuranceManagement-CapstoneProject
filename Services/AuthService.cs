@@ -131,5 +131,68 @@ namespace InsuranceManagementSystem.Services.Implementations
                 ExpiresAt = expiresAt
             };
         }
+
+        public async Task<string> ForgotPasswordAsync(ForgotPasswordRequestDto dto)
+        {
+            var email = dto.Email.Trim().ToLower();
+
+            var user = await _userRepository.GetByEmailAsync(email);
+
+            if (user == null)
+                throw new NotFoundException("User with this email does not exist.");
+
+
+            user.PasswordResetToken = Guid.NewGuid().ToString();
+
+            user.PasswordResetTokenExpiry =
+                DateTime.UtcNow.AddMinutes(15);
+
+
+            user.UpdatedDate = DateTime.UtcNow;
+
+
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+
+            return user.PasswordResetToken;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDto dto)
+        {
+            var email = dto.Email.Trim().ToLower();
+
+            var user = await _userRepository.GetByEmailAsync(email);
+
+
+            if (user == null)
+                throw new NotFoundException("User not found.");
+
+
+            if (user.PasswordResetToken != dto.Token)
+                throw new BadRequestException("Invalid reset token.");
+
+
+            if (user.PasswordResetTokenExpiry < DateTime.UtcNow)
+                throw new BadRequestException("Reset token expired.");
+
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+
+            user.PasswordResetToken = null;
+
+            user.PasswordResetTokenExpiry = null;
+
+            user.UpdatedDate = DateTime.UtcNow;
+
+
+            await _userRepository.UpdateAsync(user);
+
+            await _userRepository.SaveChangesAsync();
+
+
+            return true;
+        }
     }
 }

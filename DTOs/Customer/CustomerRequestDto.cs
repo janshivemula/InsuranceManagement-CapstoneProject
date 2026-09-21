@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace InsuranceManagementSystem.DTOs.Customer
 {
@@ -34,5 +35,9 @@ namespace InsuranceManagementSystem.DTOs.Customer
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Nominee relation must be between 2 and 50 characters.")]
         [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Nominee relation can contain only alphabets and spaces.")]
         public string NomineeRelation { get; set; } = string.Empty;
+
+        //  profile picture
+        public IFormFile? ProfileImage { get; set; }
+        public string? ProfileImageUrl { get; set; }
     }
 }

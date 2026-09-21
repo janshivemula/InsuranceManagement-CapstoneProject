@@ -107,20 +107,40 @@ namespace InsuranceManagementSystem.Profiles
             // PREMIUM PAYMENT
             // =========================
 
-            CreateMap<PremiumPaymentRequestDto, PremiumPayment>();
-
             CreateMap<PremiumPayment, PremiumPaymentResponseDto>()
-                .ForMember(dest => dest.PolicyNumber,
-                    opt => opt.MapFrom(src => src.Policy.PolicyNumber));
+
+    .ForMember(dest => dest.PolicyId,
+        opt => opt.MapFrom(src => src.PolicyId))
+
+    .ForMember(dest => dest.CustomerId,
+        opt => opt.MapFrom(src => src.CustomerId))
+
+    .ForMember(dest => dest.CustomerName,
+        opt => opt.MapFrom(src => src.Customer.User.FullName))
+
+    .ForMember(dest => dest.PolicyNumber,
+        opt => opt.MapFrom(src => src.Policy.PolicyNumber))
+
+    .ForMember(dest => dest.TotalPremiumPaid,
+        opt => opt.MapFrom(src => src.Policy.TotalPremiumPaid))
+
+    .ForMember(dest => dest.NextDueDate,
+        opt => opt.MapFrom(src => src.Policy.NextDueDate))
+
+    .ForMember(dest => dest.IsPaymentDue,
+        opt => opt.MapFrom(src =>
+            src.Policy.NextDueDate != null &&
+            src.Policy.NextDueDate <= DateTime.UtcNow));
 
 
             // =========================
             // CLAIM DOCUMENT
             // =========================
 
+
             CreateMap<ClaimDocumentRequestDto, ClaimDocument>()
-    .ForMember(dest => dest.DocumentReference,
-        opt => opt.Ignore());
+                .ForMember(dest => dest.DocumentReference,
+                    opt => opt.Ignore());
 
             CreateMap<ClaimDocument, ClaimDocumentResponseDto>()
                 .ForMember(dest => dest.FilePath,
@@ -144,15 +164,21 @@ namespace InsuranceManagementSystem.Profiles
             // CLAIM
             // =========================
 
+            
+
             CreateMap<ClaimRequestDto, Claim>()
                 .ForMember(dest => dest.IncidentDate,
-                    opt => opt.MapFrom(src => DateOnly.FromDateTime(src.IncidentDate)))
-                .ForMember(dest => dest.ClaimDocuments,
-                    opt => opt.MapFrom(src => src.Documents));
+                    opt => opt.MapFrom(src => DateOnly.FromDateTime(src.IncidentDate)));
 
             CreateMap<Claim, ClaimResponseDto>()
                 .ForMember(dest => dest.PolicyNumber,
                     opt => opt.MapFrom(src => src.Policy.PolicyNumber))
+                .ForMember(dest => dest.ProductName,
+        opt => opt.MapFrom(src => src.Policy.Plan.InsuranceProduct.ProductName))
+
+    .ForMember(dest => dest.PlanName,
+        opt => opt.MapFrom(src => src.Policy.Plan.PlanName))
+
                 .ForMember(dest => dest.CustomerName,
                     opt => opt.MapFrom(src => src.Customer.User.FullName))
                 .ForMember(dest => dest.IncidentDate,
